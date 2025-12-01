@@ -3,7 +3,7 @@
 $DB_HOST = getenv('DB_HOST') ?: 'localhost';
 $DB_NAME = getenv('DB_NAME') ?: 'blog_app';
 $DB_USER = getenv('DB_USER') ?: 'root';
-$DB_PASS = getenv('DB_PASS') ?: '';
+$DB_PASS = getenv('DB_PASS') ?: 'A@sherman1234!';
 $DB_CHARSET = 'utf8mb4';
 
 $dsn = "mysql:host={$DB_HOST};dbname={$DB_NAME};charset={$DB_CHARSET}";

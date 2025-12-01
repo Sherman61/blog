@@ -1,6 +1,6 @@
 <?php
 // Application configuration
-$baseUrl = '/blog';
+$baseUrl = '/blog/';
 
 function site_url(string $path = ''): string
 {
@@ -15,6 +15,6 @@ function site_url(string $path = ''): string
 
 function asset_url(string $path): string
 {
-    return site_url('assets/' . ltrim($path, '/'));
+    return site_url('public/assets/' . ltrim($path, '/'));
 }
 ?>
