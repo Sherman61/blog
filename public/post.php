@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Exception $e) {
             error_log('Failed to toggle like: ' . $e->getMessage());
         }
-        header('Location: /post.php?slug=' . urlencode($slug));
+        header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
         exit;
     }
 
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log('Failed to add comment: ' . $e->getMessage());
             }
         }
-        header('Location: /post.php?slug=' . urlencode($slug));
+        header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
         exit;
     }
 }
@@ -110,7 +110,7 @@ try {
             <?php if (is_logged_in()): ?>
                 <button class="button" type="submit" name="like" value="1"><?php echo $userLiked ? 'Unlike' : 'Like'; ?> (<?php echo $likeCount; ?>)</button>
             <?php else: ?>
-                <a class="button secondary" href="/login.php">Login to like</a>
+                <a class="button secondary" href="<?php echo site_url('login.php'); ?>">Login to like</a>
                 <span class="post-meta"><?php echo $likeCount; ?> likes</span>
             <?php endif; ?>
         </form>
@@ -134,7 +134,7 @@ try {
                 <button class="button" type="submit">Post comment</button>
             </form>
         <?php else: ?>
-            <p><a href="/login.php">Login</a> or <a href="/signup.php">sign up</a> to join the discussion.</p>
+            <p><a href="<?php echo site_url('login.php'); ?>">Login</a> or <a href="<?php echo site_url('signup.php'); ?>">sign up</a> to join the discussion.</p>
         <?php endif; ?>
     </div>
 

@@ -34,7 +34,7 @@ if ($slug) {
         <?php endif; ?>
     </div>
     <div class="pill-row">
-        <a class="pill" href="/">Back to all</a>
+        <a class="pill" href="<?php echo site_url(); ?>">Back to all</a>
         <span class="pill muted">Depth</span>
         <span class="pill muted">Perspective</span>
     </div>
@@ -43,10 +43,10 @@ if ($slug) {
     <?php foreach ($posts as $post): ?>
         <article class="post-card">
             <div class="post-meta"><?php echo date('M j, Y', strtotime($post['published_at'])); ?></div>
-            <h3><a href="/post.php?slug=<?php echo htmlspecialchars($post['slug']); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h3>
+            <h3><a href="<?php echo site_url('post.php?slug=' . urlencode($post['slug'])); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h3>
             <p><?php echo htmlspecialchars(substr(strip_tags($post['content']), 0, 150)); ?>...</p>
             <div class="card-footer">
-                <a class="button ghost" href="/post.php?slug=<?php echo htmlspecialchars($post['slug']); ?>">Read more</a>
+                <a class="button ghost" href="<?php echo site_url('post.php?slug=' . urlencode($post['slug'])); ?>">Read more</a>
             </div>
         </article>
     <?php endforeach; ?>

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../config/app.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -16,7 +18,18 @@ function current_user(): ?array
 function require_login(): void
 {
     if (!is_logged_in()) {
-        header('Location: /login.php');
+        header('Location: ' . site_url('login.php'));
+        exit;
+    }
+}
+
+function require_admin(): void
+{
+    require_login();
+
+    $user = current_user();
+    if (empty($user['is_admin'])) {
+        header('Location: ' . site_url());
         exit;
     }
 }

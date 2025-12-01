@@ -19,7 +19,7 @@ try {
     $totalPosts = (int)$countStmt->fetchColumn();
 
     if (!empty($posts)) {
-        $highlightUrl = '/post.php?slug=' . urlencode($posts[0]['slug']);
+        $highlightUrl = site_url('post.php?slug=' . urlencode($posts[0]['slug']));
     }
 } catch (Exception $e) {
     error_log('Failed to load posts: ' . $e->getMessage());
@@ -28,7 +28,7 @@ try {
 <section class="hero">
     <div class="hero-content">
         <p class="eyebrow">Curated calm</p>
-        <h1>Mindful Musings</h1>
+        <h1>Shiya's Blog</h1>
         <p class="lead">Thoughtful stories, gentle reminders, and grounded reflections to slow down your scroll.</p>
         <div class="hero-actions">
             <a class="button" href="<?php echo htmlspecialchars($highlightUrl); ?>">Read a highlighted story</a>
@@ -53,7 +53,7 @@ try {
         <h3>Popular themes</h3>
         <div class="pill-row">
             <?php foreach ($categories as $cat): ?>
-                <a class="pill" href="/category.php?slug=<?php echo htmlspecialchars($cat['slug']); ?>"><?php echo htmlspecialchars($cat['name']); ?></a>
+                <a class="pill" href="<?php echo site_url('category.php?slug=' . urlencode($cat['slug'])); ?>"><?php echo htmlspecialchars($cat['name']); ?></a>
             <?php endforeach; ?>
         </div>
         <p class="panel-text">A tranquil corner of the internet for mental health, personal growth, and reflections that resonate.</p>
@@ -78,10 +78,10 @@ try {
                 <span class="badge"><?php echo htmlspecialchars($post['category_name']); ?></span>
                 <span><?php echo date('M j, Y', strtotime($post['published_at'])); ?></span>
             </div>
-            <h3><a href="/post.php?slug=<?php echo htmlspecialchars($post['slug']); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h3>
+            <h3><a href="<?php echo site_url('post.php?slug=' . urlencode($post['slug'])); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h3>
             <p><?php echo htmlspecialchars(substr(strip_tags($post['content']), 0, 170)); ?>...</p>
             <div class="card-footer">
-                <a class="button ghost" href="/post.php?slug=<?php echo htmlspecialchars($post['slug']); ?>">Read more</a>
+                <a class="button ghost" href="<?php echo site_url('post.php?slug=' . urlencode($post['slug'])); ?>">Read more</a>
                 <span class="read-time">~<?php echo max(2, ceil(str_word_count(strip_tags($post['content'])) / 200)); ?> min read</span>
             </div>
         </article>
