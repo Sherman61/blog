@@ -19,7 +19,7 @@ try {
     $totalPosts = (int) $countStmt->fetchColumn();
 
     if (!empty($posts)) {
-        $highlightUrl = site_url('public/post.php?slug=' . urlencode($posts[0]['slug']));
+        $highlightUrl = site_url('post.php?slug=' . urlencode($posts[0]['slug']));
     }
 } catch (Exception $e) {
     error_log('Failed to load posts: ' . $e->getMessage());
