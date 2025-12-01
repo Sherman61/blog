@@ -89,45 +89,68 @@ try {
     error_log('Failed to load comments: ' . $e->getMessage());
 }
 ?>
-<article class="card">
-    <div class="post-meta"><?php echo htmlspecialchars($post['category_name']); ?> · <?php echo date('M j, Y', strtotime($post['published_at'])); ?> · by <?php echo htmlspecialchars($post['username']); ?></div>
-    <h1><?php echo htmlspecialchars($post['title']); ?></h1>
-    <div><?php echo nl2br(htmlspecialchars($post['content'])); ?></div>
-</article>
-<section>
-    <form method="post" class="form-inline">
-        <?php if (is_logged_in()): ?>
-            <button class="button" type="submit" name="like" value="1"><?php echo $userLiked ? 'Unlike' : 'Like'; ?> (<?php echo $likeCount; ?>)</button>
-        <?php else: ?>
-            <a class="button secondary" href="/login.php">Login to like</a>
-            <span class="post-meta"><?php echo $likeCount; ?> likes</span>
-        <?php endif; ?>
-    </form>
-</section>
-<section>
-    <h3>Comments</h3>
-    <?php if (is_logged_in()): ?>
-        <form method="post">
-            <input type="hidden" name="comment" value="1">
-            <div class="form-group">
-                <label for="content">Add your thoughts</label>
-                <textarea id="content" name="content" required></textarea>
-            </div>
-            <button class="button" type="submit">Post comment</button>
-        </form>
-    <?php else: ?>
-        <p><a href="/login.php">Login</a> or <a href="/signup.php">sign up</a> to join the discussion.</p>
-    <?php endif; ?>
-
-    <?php foreach ($comments as $comment): ?>
-        <div class="comment">
-            <strong><?php echo htmlspecialchars($comment['username']); ?></strong>
-            <div class="post-meta"><?php echo date('M j, Y g:i A', strtotime($comment['created_at'])); ?></div>
-            <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
+<article class="article">
+    <div class="article-head">
+        <div class="badge-row">
+            <span class="badge">Posted in <?php echo htmlspecialchars($post['category_name']); ?></span>
+            <span class="pill muted"><?php echo date('M j, Y', strtotime($post['published_at'])); ?></span>
         </div>
-    <?php endforeach; ?>
-    <?php if (empty($comments)): ?>
-        <p>No comments yet.</p>
-    <?php endif; ?>
+        <h1><?php echo htmlspecialchars($post['title']); ?></h1>
+        <p class="muted">Written by <?php echo htmlspecialchars($post['username']); ?></p>
+    </div>
+    <div class="article-body"><?php echo nl2br(htmlspecialchars($post['content'])); ?></div>
+</article>
+<section class="engagement">
+    <div class="engagement-card">
+        <div>
+            <p class="eyebrow">Support the author</p>
+            <p class="muted">A small tap goes a long way. Join the conversation or drop a like.</p>
+        </div>
+        <form method="post" class="action-row">
+            <?php if (is_logged_in()): ?>
+                <button class="button" type="submit" name="like" value="1"><?php echo $userLiked ? 'Unlike' : 'Like'; ?> (<?php echo $likeCount; ?>)</button>
+            <?php else: ?>
+                <a class="button secondary" href="/login.php">Login to like</a>
+                <span class="post-meta"><?php echo $likeCount; ?> likes</span>
+            <?php endif; ?>
+        </form>
+    </div>
+</section>
+<section class="comments">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Conversation</p>
+            <h3>Comments</h3>
+        </div>
+    </div>
+    <div class="comment-box">
+        <?php if (is_logged_in()): ?>
+            <form method="post" class="stack">
+                <input type="hidden" name="comment" value="1">
+                <div class="form-group">
+                    <label for="content">Add your thoughts</label>
+                    <textarea id="content" name="content" placeholder="Share your perspective" required></textarea>
+                </div>
+                <button class="button" type="submit">Post comment</button>
+            </form>
+        <?php else: ?>
+            <p><a href="/login.php">Login</a> or <a href="/signup.php">sign up</a> to join the discussion.</p>
+        <?php endif; ?>
+    </div>
+
+    <div class="comment-list">
+        <?php foreach ($comments as $comment): ?>
+            <div class="comment">
+                <div class="comment-header">
+                    <strong><?php echo htmlspecialchars($comment['username']); ?></strong>
+                    <span class="post-meta"><?php echo date('M j, Y g:i A', strtotime($comment['created_at'])); ?></span>
+                </div>
+                <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
+            </div>
+        <?php endforeach; ?>
+        <?php if (empty($comments)): ?>
+            <p class="muted">No comments yet.</p>
+        <?php endif; ?>
+    </div>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

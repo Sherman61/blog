@@ -30,23 +30,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<section class="card">
-    <h2>Create an account</h2>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Join the circle</p>
+        <h1>Create an account</h1>
+        <p class="muted">Save your favorite reads and share your reflections.</p>
+    </div>
+</section>
+<section class="card elevated">
     <?php if ($error): ?><div class="alert error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-    <form method="post">
+    <form method="post" class="stack">
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
+            <input type="text" id="username" name="username" placeholder="mindful_reader" required>
         </div>
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required>
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
         <button class="button" type="submit">Sign up</button>
+        <p class="muted">Already have an account? <a href="/login.php">Log in</a>.</p>
     </form>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

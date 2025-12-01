@@ -25,22 +25,33 @@ if ($slug) {
     }
 }
 ?>
-<section class="hero">
-    <h1><?php echo $category ? htmlspecialchars($category['name']) : 'Category'; ?></h1>
-    <?php if ($category && $category['description']): ?>
-        <p><?php echo htmlspecialchars($category['description']); ?></p>
-    <?php endif; ?>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Curated topic</p>
+        <h1><?php echo $category ? htmlspecialchars($category['name']) : 'Category'; ?></h1>
+        <?php if ($category && $category['description']): ?>
+            <p class="muted"><?php echo htmlspecialchars($category['description']); ?></p>
+        <?php endif; ?>
+    </div>
+    <div class="pill-row">
+        <a class="pill" href="/">Back to all</a>
+        <span class="pill muted">Depth</span>
+        <span class="pill muted">Perspective</span>
+    </div>
 </section>
-<div class="grid">
+<div class="post-grid">
     <?php foreach ($posts as $post): ?>
-        <article class="card">
+        <article class="post-card">
             <div class="post-meta"><?php echo date('M j, Y', strtotime($post['published_at'])); ?></div>
             <h3><a href="/post.php?slug=<?php echo htmlspecialchars($post['slug']); ?>"><?php echo htmlspecialchars($post['title']); ?></a></h3>
             <p><?php echo htmlspecialchars(substr(strip_tags($post['content']), 0, 150)); ?>...</p>
+            <div class="card-footer">
+                <a class="button ghost" href="/post.php?slug=<?php echo htmlspecialchars($post['slug']); ?>">Read more</a>
+            </div>
         </article>
     <?php endforeach; ?>
     <?php if (empty($posts)): ?>
-        <p>No posts found for this category.</p>
+        <p class="muted">No posts found for this category.</p>
     <?php endif; ?>
 </div>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
