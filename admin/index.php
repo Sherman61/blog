@@ -137,6 +137,24 @@ try {
 <?php if ($message): ?>
     <div class="alert <?php echo htmlspecialchars($message['type']); ?>"><?php echo htmlspecialchars($message['message']); ?></div>
 <?php endif; ?>
+<section class="card analytics-card">
+    <div class="section-header">
+        <div>
+            <h2>Realtime analytics</h2>
+            <p class="muted">Quick view of live page activity via Google Analytics (admin login required).</p>
+        </div>
+        <a class="button tertiary" href="https://analytics.google.com/analytics/web/#/a163650523p514755040/realtime/pages?params=_u..nav%3Dmaui" target="_blank" rel="noopener">Open in new tab</a>
+    </div>
+    <div class="analytics-embed">
+        <iframe
+            class="analytics-frame"
+            title="Google Analytics realtime pages"
+            src="https://analytics.google.com/analytics/web/#/a163650523p514755040/realtime/pages?params=_u..nav%3Dmaui"
+            loading="lazy"
+            allowfullscreen>
+        </iframe>
+    </div>
+</section>
 <div class="admin-grid">
     <section class="card">
         <h2>Create a post</h2>

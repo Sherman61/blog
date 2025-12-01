@@ -245,6 +245,20 @@ textarea { min-height: 140px; }
 .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; }
 .alert.success { background: rgba(46, 204, 113, 0.1); color: #5fe094; border: 1px solid rgba(46, 204, 113, 0.4); }
 .alert.error { background: rgba(231, 76, 60, 0.1); color: #ff9d92; border: 1px solid rgba(231, 76, 60, 0.4); }
+.analytics-card { margin-bottom: 20px; }
+.analytics-embed {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px;
+}
+.analytics-frame {
+    width: 100%;
+    min-height: 520px;
+    border: none;
+    border-radius: 10px;
+    background: #fff;
+}
 
 .article {
     background: var(--surface);
