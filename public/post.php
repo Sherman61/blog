@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Comments
 $comments = [];
 try {
-    $commentStmt = $pdo->prepare('SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at DESC');
+    $commentStmt = $pdo->prepare('SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? AND c.is_deleted = 0 ORDER BY c.created_at DESC');
     $commentStmt->execute([$post['id']]);
     $comments = $commentStmt->fetchAll();
 } catch (Exception $e) {
