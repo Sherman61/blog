@@ -16,13 +16,23 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
 <header class="site-header">
     <div class="container header-inner">
-        <a class="logo" href="/">Mindful Musings</a>
-        <nav class="nav">
+        <div class="brand">
+            <a class="logo" href="/">Mindful Musings</a>
+            <p class="tagline">Stories for calmer minds</p>
+        </div>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav" id="primary-nav">
             <?php foreach ($categories as $cat): ?>
                 <a href="/category.php?slug=<?php echo htmlspecialchars($cat['slug']); ?>">
                     <?php echo htmlspecialchars($cat['name']); ?>
