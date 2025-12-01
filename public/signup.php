@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$username, $email, password_hash($password, PASSWORD_BCRYPT)]);
 
             $userId = $pdo->lastInsertId();
-            $_SESSION['user'] = ['id' => $userId, 'username' => $username, 'email' => $email];
-            header('Location: /');
+            $_SESSION['user'] = ['id' => $userId, 'username' => $username, 'email' => $email, 'is_admin' => 0];
+            header('Location: ' . site_url());
             exit;
         } catch (PDOException $e) {
             if ($e->errorInfo[1] === 1062) {
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
         <button class="button" type="submit">Sign up</button>
-        <p class="muted">Already have an account? <a href="/login.php">Log in</a>.</p>
+        <p class="muted">Already have an account? <a href="<?php echo site_url('login.php'); ?>">Log in</a>.</p>
     </form>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -18,9 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user'] = [
                     'id' => $user['id'],
                     'username' => $user['username'],
-                    'email' => $user['email']
+                    'email' => $user['email'],
+                    'is_admin' => (int)($user['is_admin'] ?? 0)
                 ];
-                header('Location: /');
+                header('Location: ' . site_url());
                 exit;
             } else {
                 $error = 'Invalid credentials.';
@@ -51,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
         <button class="button" type="submit">Log in</button>
-        <p class="muted">No account? <a href="/signup.php">Create one</a>.</p>
+        <p class="muted">No account? <a href="<?php echo site_url('signup.php'); ?>">Create one</a>.</p>
     </form>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

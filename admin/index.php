@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/functions.php';
-require_login();
+require_admin();
 
 $message = flash_message();
 
@@ -15,12 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_category'])) {
             $stmt = $pdo->prepare('INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)');
             $stmt->execute([$name, $slug, $description ?: null]);
             set_flash('success', 'Category created successfully.');
-            header('Location: /admin/index.php');
+            header('Location: ' . site_url('admin/index.php'));
             exit;
         } catch (PDOException $e) {
             error_log('Create category failed: ' . $e->getMessage());
             set_flash('error', 'Unable to create category.');
-            header('Location: /admin/index.php');
+            header('Location: ' . site_url('admin/index.php'));
             exit;
         }
     } else {
@@ -42,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
             $stmt = $pdo->prepare('INSERT INTO posts (user_id, category_id, title, slug, content, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([current_user()['id'], $categoryId, $title, $slug, $content, $status, $publishedAt]);
             set_flash('success', 'Post created successfully.');
-            header('Location: /admin/index.php');
+            header('Location: ' . site_url('admin/index.php'));
             exit;
         } catch (PDOException $e) {
             error_log('Create post failed: ' . $e->getMessage());
             set_flash('error', 'Unable to create post.');
-            header('Location: /admin/index.php');
+            header('Location: ' . site_url('admin/index.php'));
             exit;
         }
     } else {
