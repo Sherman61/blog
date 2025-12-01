@@ -1,20 +1,27 @@
 <?php
 // Application configuration
-$baseUrl = '/blog/';
+$baseUrl = '/blog';
 
 function site_url(string $path = ''): string
 {
     global $baseUrl;
+    
     $normalizedBase = rtrim($baseUrl, '/');
     $trimmedPath = ltrim($path, '/');
 
-    return $trimmedPath === ''
-        ? $normalizedBase
-        : $normalizedBase . '/' . $trimmedPath;
+    if ($trimmedPath === '') {
+        return $normalizedBase . '/public';
+    }
+
+    if (str_starts_with($trimmedPath, 'admin/')) {
+        return $normalizedBase . '/' . $trimmedPath;
+    }
+
+    return $normalizedBase . '/public/' . $trimmedPath;
 }
 
 function asset_url(string $path): string
 {
-    return site_url('public/assets/' . ltrim($path, '/'));
+    return site_url('assets/' . ltrim($path, '/'));
 }
 ?>
