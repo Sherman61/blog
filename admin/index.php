@@ -1,92 +1,17 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/_nav.php';
 require_admin();
 
 $message = flash_message();
 
-// Handle new category
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_category'])) {
-    $name = trim($_POST['name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    if ($name) {
-        $slug = slugify($name);
-        try {
-            $stmt = $pdo->prepare('INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)');
-            $stmt->execute([$name, $slug, $description ?: null]);
-            set_flash('success', 'Category created successfully.');
-            header('Location: ' . site_url('admin/index.php'));
-            exit;
-        } catch (PDOException $e) {
-            error_log('Create category failed: ' . $e->getMessage());
-            set_flash('error', 'Unable to create category.');
-            header('Location: ' . site_url('admin/index.php'));
-            exit;
-        }
-    } else {
-        $message = ['type' => 'error', 'message' => 'Category name is required.'];
-    }
-}
-
-// Handle new post
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
-    $title = trim($_POST['title'] ?? '');
-    $content = trim($_POST['content'] ?? '');
-    $categoryId = (int)($_POST['category_id'] ?? 0);
-    $status = $_POST['status'] ?? 'draft';
-
-    if ($title && $content && $categoryId) {
-        $slug = slugify($title);
-        $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
-        try {
-            $stmt = $pdo->prepare('INSERT INTO posts (user_id, category_id, title, slug, content, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
-            $stmt->execute([current_user()['id'], $categoryId, $title, $slug, $content, $status, $publishedAt]);
-            set_flash('success', 'Post created successfully.');
-            header('Location: ' . site_url('admin/index.php'));
-            exit;
-        } catch (PDOException $e) {
-            error_log('Create post failed: ' . $e->getMessage());
-            set_flash('error', 'Unable to create post.');
-            header('Location: ' . site_url('admin/index.php'));
-            exit;
-        }
-    } else {
-        $message = ['type' => 'error', 'message' => 'All post fields are required.'];
-    }
-}
-
-// Publish draft
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publish_post'])) {
-    $postId = (int)($_POST['post_id'] ?? 0);
-
-    if ($postId > 0) {
-        try {
-            $publishStmt = $pdo->prepare("UPDATE posts SET status = 'published', published_at = COALESCE(published_at, NOW()) WHERE id = ?");
-            $publishStmt->execute([$postId]);
-
-            if ($publishStmt->rowCount() > 0) {
-                set_flash('success', 'Draft published successfully.');
-            } else {
-                set_flash('error', 'Post not found or already published.');
-            }
-        } catch (PDOException $e) {
-            error_log('Publish post failed: ' . $e->getMessage());
-            set_flash('error', 'Unable to publish post.');
-        }
-    }
-
-    header('Location: ' . site_url('admin/index.php'));
-    exit;
-}
-
-// Delete comment
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
-    $commentId = (int)($_POST['comment_id'] ?? 0);
-
-    if ($commentId > 0) {
-        try {
-            $deleteStmt = $pdo->prepare('UPDATE comments SET is_deleted = 1 WHERE id = ?');
-            $deleteStmt->execute([$commentId]);
+// Basic metrics for dashboard
+$metrics = [
+    'posts' => 0,
+    'categories' => 0,
+    'pending_comments' => 0,
+];
 
             if ($deleteStmt->rowCount() > 0) {
                 set_flash('success', 'Comment deleted.');
@@ -174,16 +99,14 @@ try {
         LIMIT 15");
     $recentComments = $commentStmt->fetchAll();
 } catch (Exception $e) {
-    error_log('Admin load failed: ' . $e->getMessage());
-    $categories = [];
-    $userPosts = [];
-    $recentComments = [];
+    error_log('Admin metrics failed: ' . $e->getMessage());
 }
 ?>
 <section class="hero">
     <h1>Admin dashboard</h1>
-    <p>Publish new categories and posts.</p>
+    <p>Manage posts, categories, and conversations.</p>
 </section>
+<?php admin_nav('dashboard'); ?>
 <?php $message = $message ?? flash_message(); ?>
 <?php if ($message): ?>
     <div class="alert <?php echo htmlspecialchars($message['type']); ?>"><?php echo htmlspecialchars($message['message']); ?></div>
@@ -313,9 +236,6 @@ try {
                 <p class="muted">Comment deleted.</p>
             <?php endif; ?>
         </div>
-    <?php endforeach; ?>
-    <?php if (empty($recentComments)): ?>
-        <p>No comments yet.</p>
-    <?php endif; ?>
+    </div>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

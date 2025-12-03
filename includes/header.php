@@ -9,6 +9,15 @@ try {
 } catch (Exception $e) {
     error_log('Failed to load categories: ' . $e->getMessage());
 }
+
+// Provide a fallback list if categories are missing so navigation still renders
+if (empty($categories)) {
+    $categories = [
+        ['id' => null, 'name' => 'Thoughts, Reflections, Realizations', 'slug' => 'thoughts-reflections-realizations'],
+        ['id' => null, 'name' => 'Mental Health', 'slug' => 'mental-health'],
+        ['id' => null, 'name' => 'Opinions', 'slug' => 'opinions'],
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
