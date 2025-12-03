@@ -86,6 +86,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 set_flash('error', 'Unable to add comment right now.');
             }
         }
+
+        header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
+        exit;
+    }
+
+    if (isset($_POST['delete_post']) && is_logged_in()) {
+        $user = current_user();
+        if ($user && ($user['id'] === (int)$post['user_id'] || !empty($user['is_admin']))) {
+            try {
+                $deletePost = $pdo->prepare('DELETE FROM posts WHERE id = ?');
+                $deletePost->execute([$post['id']]);
+                set_flash('success', 'Post deleted.');
+                header('Location: ' . site_url());
+                exit;
+            } catch (Exception $e) {
+                error_log('Failed to delete post: ' . $e->getMessage());
+                set_flash('error', 'Unable to delete post right now.');
+            }
+        } else {
+            set_flash('error', 'You do not have permission to delete this post.');
+        }
+
         header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
         exit;
     }
@@ -108,27 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log('Failed to delete comment: ' . $e->getMessage());
                 set_flash('error', 'Unable to delete comment right now.');
             }
-        }
-
-        header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
-        exit;
-    }
-
-    if (isset($_POST['delete_post']) && is_logged_in()) {
-        $user = current_user();
-        if ($user && ($user['id'] === (int)$post['user_id'] || !empty($user['is_admin']))) {
-            try {
-                $deletePost = $pdo->prepare('DELETE FROM posts WHERE id = ?');
-                $deletePost->execute([$post['id']]);
-                set_flash('success', 'Post deleted.');
-                header('Location: ' . site_url());
-                exit;
-            } catch (Exception $e) {
-                error_log('Failed to delete post: ' . $e->getMessage());
-                set_flash('error', 'Unable to delete post right now.');
-            }
-        } else {
-            set_flash('error', 'You do not have permission to delete this post.');
         }
 
         header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
