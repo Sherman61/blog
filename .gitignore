@@ -1,8 +1,8 @@
 /vendor/
 /node_modules/
-/.env
-/.idea/
-/.vscode/
+.env
+.idea/
+.vscode/
 .DS_Store
 /config/db.php
-.env
+/.env
