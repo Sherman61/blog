@@ -5,13 +5,91 @@ require_once __DIR__ . '/_nav.php';
 require_admin();
 
 $message = flash_message();
-
-// Basic metrics for dashboard
+$categories = [];
+$userPosts = [];
+$recentComments = [];
 $metrics = [
     'posts' => 0,
     'categories' => 0,
     'pending_comments' => 0,
 ];
+
+// Handle create category
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_category'])) {
+    $name = trim($_POST['name'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+
+    if ($name) {
+        $slug = slugify($name);
+        try {
+            $stmt = $pdo->prepare('INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)');
+            $stmt->execute([$name, $slug, $description ?: null]);
+            set_flash('success', 'Category created successfully.');
+            header('Location: ' . site_url('admin/index.php'));
+            exit;
+        } catch (PDOException $e) {
+            error_log('Create category failed: ' . $e->getMessage());
+            set_flash('error', 'Unable to create category. Make sure the name is unique.');
+            header('Location: ' . site_url('admin/index.php'));
+            exit;
+        }
+    } else {
+        $message = ['type' => 'error', 'message' => 'Category name is required.'];
+    }
+}
+
+// Handle create post
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
+    $title = trim($_POST['title'] ?? '');
+    $content = trim($_POST['content'] ?? '');
+    $categoryId = (int)($_POST['category_id'] ?? 0);
+    $status = $_POST['status'] ?? 'draft';
+
+    if ($title && $content && $categoryId) {
+        $slug = slugify($title);
+        $publishedAt = $status === 'published' ? date('Y-m-d H:i:s') : null;
+        try {
+            $stmt = $pdo->prepare('INSERT INTO posts (user_id, category_id, title, slug, content, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([current_user()['id'], $categoryId, $title, $slug, $content, $status, $publishedAt]);
+            set_flash('success', 'Post created successfully.');
+            header('Location: ' . site_url('admin/index.php'));
+            exit;
+        } catch (PDOException $e) {
+            error_log('Create post failed: ' . $e->getMessage());
+            set_flash('error', 'Unable to create post. Ensure the title is unique.');
+            header('Location: ' . site_url('admin/index.php'));
+            exit;
+        }
+    } else {
+        $message = ['type' => 'error', 'message' => 'All post fields are required.'];
+    }
+}
+
+// Publish a draft post
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publish_post'])) {
+    $postId = (int)($_POST['post_id'] ?? 0);
+    if ($postId > 0) {
+        try {
+            $stmt = $pdo->prepare('UPDATE posts SET status = \'published\', published_at = IFNULL(published_at, NOW()) WHERE id = ?');
+            $stmt->execute([$postId]);
+            set_flash('success', 'Post published.');
+        } catch (PDOException $e) {
+            error_log('Publish post failed: ' . $e->getMessage());
+            set_flash('error', 'Unable to publish post.');
+        }
+    }
+    header('Location: ' . site_url('admin/index.php'));
+    exit;
+}
+
+// Delete comment
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
+    $commentId = (int)($_POST['comment_id'] ?? 0);
+
+    if ($commentId > 0) {
+        try {
+            $deleteStmt = $pdo->prepare('UPDATE comments SET is_deleted = 1 WHERE id = ?');
+            $deleteStmt->execute([$commentId]);
 
             if ($deleteStmt->rowCount() > 0) {
                 set_flash('success', 'Comment deleted.');
@@ -79,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_comment'])) {
     exit;
 }
 
-// Fetch categories and posts for dashboard
+// Fetch categories, posts, and comments for dashboard
 try {
     $catStmt = $pdo->query('SELECT * FROM categories ORDER BY name');
     $categories = $catStmt->fetchAll();
@@ -98,8 +176,12 @@ try {
         ORDER BY c.created_at DESC
         LIMIT 15");
     $recentComments = $commentStmt->fetchAll();
+
+    $metrics['posts'] = (int)$pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
+    $metrics['categories'] = (int)$pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn();
+    $metrics['pending_comments'] = (int)$pdo->query('SELECT COUNT(*) FROM comments WHERE is_approved = 0 AND is_deleted = 0')->fetchColumn();
 } catch (Exception $e) {
-    error_log('Admin metrics failed: ' . $e->getMessage());
+    error_log('Admin dashboard load failed: ' . $e->getMessage());
 }
 ?>
 <section class="hero">
@@ -111,24 +193,30 @@ try {
 <?php if ($message): ?>
     <div class="alert <?php echo htmlspecialchars($message['type']); ?>"><?php echo htmlspecialchars($message['message']); ?></div>
 <?php endif; ?>
+
 <section class="card analytics-card">
     <div class="section-header">
         <div>
-            <h2>Realtime analytics</h2>
-            <p class="muted">Quick view of live page activity via Google Analytics (admin login required).</p>
+            <h2>Site snapshot</h2>
+            <p class="muted">Quick overview of published content and moderation queue.</p>
         </div>
-        <a class="button tertiary" href="https://analytics.google.com/analytics/web/#/a163650523p514755040/realtime/pages?params=_u..nav%3Dmaui" target="_blank" rel="noopener">Open in new tab</a>
     </div>
-    <div class="analytics-embed">
-        <iframe
-            class="analytics-frame"
-            title="Google Analytics realtime pages"
-            src="https://analytics.google.com/analytics/web/#/a163650523p514755040/realtime/pages?params=_u..nav%3Dmaui"
-            loading="lazy"
-            allowfullscreen>
-        </iframe>
+    <div class="metrics-grid">
+        <div class="metric">
+            <div class="metric__label">Posts</div>
+            <div class="metric__value"><?php echo (int)$metrics['posts']; ?></div>
+        </div>
+        <div class="metric">
+            <div class="metric__label">Categories</div>
+            <div class="metric__value"><?php echo (int)$metrics['categories']; ?></div>
+        </div>
+        <div class="metric">
+            <div class="metric__label">Pending comments</div>
+            <div class="metric__value"><?php echo (int)$metrics['pending_comments']; ?></div>
+        </div>
     </div>
 </section>
+
 <div class="admin-grid">
     <section class="card">
         <h2>Create a post</h2>
@@ -177,6 +265,7 @@ try {
         </form>
     </section>
 </div>
+
 <section class="card" style="margin-top:20px;">
     <h2>Posts</h2>
     <?php foreach ($userPosts as $userPost): ?>
@@ -200,42 +289,45 @@ try {
 <section class="card" style="margin-top:20px;">
     <h2>Recent comments</h2>
     <?php foreach ($recentComments as $comment): ?>
-            <div class="comment">
-                <div class="comment-header">
-                    <strong><?php echo htmlspecialchars($comment['username']); ?></strong>
-                    <span class="post-meta"><?php echo date('M j, Y g:i A', strtotime($comment['created_at'])); ?></span>
-                    <?php if (!$comment['is_approved']): ?>
-                        <span class="badge secondary">Pending</span>
-                    <?php else: ?>
-                        <span class="badge">Approved</span>
-                    <?php endif; ?>
-                </div>
-                <p class="muted">On <a href="<?php echo site_url('post.php?slug=' . urlencode($comment['slug'])); ?>"><?php echo htmlspecialchars($comment['post_title']); ?></a></p>
-                <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
-            <?php if (!$comment['is_deleted']): ?>
-                <form method="post" class="action-row" style="margin-top:8px;">
-                    <input type="hidden" name="delete_comment" value="1">
-                    <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
-                    <button class="button secondary" type="submit">Delete comment</button>
-                </form>
+        <div class="comment">
+            <div class="comment-header">
+                <strong><?php echo htmlspecialchars($comment['username']); ?></strong>
+                <span class="post-meta"><?php echo date('M j, Y g:i A', strtotime($comment['created_at'])); ?></span>
                 <?php if (!$comment['is_approved']): ?>
-                    <form method="post" class="action-row" style="margin-top:8px;">
-                        <input type="hidden" name="approve_comment" value="1">
-                        <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
-                        <button class="button" type="submit">Approve comment</button>
-                    </form>
+                    <span class="badge secondary">Pending</span>
+                <?php else: ?>
+                    <span class="badge">Approved</span>
                 <?php endif; ?>
-                <form method="post" class="stack" style="margin-top:12px;">
-                    <input type="hidden" name="edit_comment" value="1">
+            </div>
+            <p class="muted">On <a href="<?php echo site_url('post.php?slug=' . urlencode($comment['slug'])); ?>"><?php echo htmlspecialchars($comment['post_title']); ?></a></p>
+            <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
+        <?php if (!$comment['is_deleted']): ?>
+            <form method="post" class="action-row" style="margin-top:8px;">
+                <input type="hidden" name="delete_comment" value="1">
+                <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
+                <button class="button secondary" type="submit">Delete comment</button>
+            </form>
+            <?php if (!$comment['is_approved']): ?>
+                <form method="post" class="action-row" style="margin-top:8px;">
+                    <input type="hidden" name="approve_comment" value="1">
                     <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
-                    <label for="comment-<?php echo $comment['id']; ?>">Edit content</label>
-                    <textarea id="comment-<?php echo $comment['id']; ?>" name="content" required><?php echo htmlspecialchars($comment['content']); ?></textarea>
-                    <button class="button tertiary" type="submit">Save edit</button>
+                    <button class="button" type="submit">Approve comment</button>
                 </form>
-            <?php else: ?>
-                <p class="muted">Comment deleted.</p>
             <?php endif; ?>
+            <form method="post" class="stack" style="margin-top:12px;">
+                <input type="hidden" name="edit_comment" value="1">
+                <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
+                <label for="comment-<?php echo $comment['id']; ?>">Edit content</label>
+                <textarea id="comment-<?php echo $comment['id']; ?>" name="content" required><?php echo htmlspecialchars($comment['content']); ?></textarea>
+                <button class="button tertiary" type="submit">Save edit</button>
+            </form>
+        <?php else: ?>
+            <p class="muted">Comment deleted.</p>
+        <?php endif; ?>
         </div>
-    </div>
+    <?php endforeach; ?>
+    <?php if (empty($recentComments)): ?>
+        <p>No comments yet.</p>
+    <?php endif; ?>
 </section>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -8,6 +8,7 @@ function admin_nav(string $active = 'dashboard'): void
         'posts' => ['label' => 'Posts', 'href' => site_url('admin/posts.php')],
         'categories' => ['label' => 'Categories', 'href' => site_url('admin/categories.php')],
         'comments' => ['label' => 'Comments', 'href' => site_url('admin/comments.php')],
+        'blocked_words' => ['label' => 'Blocked words', 'href' => site_url('admin/blocked_words.php')],
     ];
     echo '<nav class="admin-nav">';
     foreach ($items as $key => $item) {
