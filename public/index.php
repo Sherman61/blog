@@ -29,7 +29,7 @@ try {
     <div class="hero-content">
         <p class="eyebrow">Curated calm</p>
         <h1>Shiya's Blog</h1>
-        <p class="lead">Thoughtful stories, gentle reminders, and grounded reflections to slow down your scroll.</p>
+        <p class="lead">Thoughtful stuff that popped into someones brain</p>
         <div class="hero-actions">
             <a class="button" href="<?php echo htmlspecialchars($highlightUrl); ?>">Read a highlighted story</a>
             <a class="button tertiary" href="#latest">Browse the library</a>
@@ -57,16 +57,13 @@ try {
                     href="<?php echo site_url('category.php?slug=' . urlencode($cat['slug'])); ?>"><?php echo htmlspecialchars($cat['name']); ?></a>
             <?php endforeach; ?>
         </div>
-        <p class="panel-text">A tranquil corner of the internet for mental health, personal growth, and reflections that
-            resonate.</p>
+        <p class="panel-text">me figuring out life and writing it down as they come along</p>
     </div>
 </section>
 <section id="latest" class="section-header">
     <div>
         <p class="eyebrow">Latest stories</p>
-        <h2>Fresh perspectives, ready to read</h2>
-        <p class="muted">Explore the newest essays from our writers. Each read comes with a dose of calm and clarity.
-        </p>
+
     </div>
     <div class="pill-row">
         <span class="pill muted">New</span>
