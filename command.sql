@@ -62,6 +62,7 @@ CREATE TABLE comments (
     user_id    INT UNSIGNED NOT NULL,
     parent_id  INT UNSIGNED NULL,
     content    TEXT NOT NULL,
+    is_approved TINYINT(1) NOT NULL DEFAULT 0,
     is_deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,

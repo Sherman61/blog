@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+$message = flash_message();
+
 $slug = $_GET['slug'] ?? '';
 if (!$slug) {
     http_response_code(404);
@@ -66,14 +68,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['comment']) && is_logged_in()) {
         $content = trim($_POST['content'] ?? '');
+        $blockedWords = find_blocked_words($content);
+
+        if ($blockedWords) {
+            set_flash('error', 'Your comment contains blocked words: ' . implode(', ', $blockedWords));
+            header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
+            exit;
+        }
+
         if ($content) {
             try {
-                $insertComment = $pdo->prepare('INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)');
+                $insertComment = $pdo->prepare('INSERT INTO comments (post_id, user_id, content, is_approved) VALUES (?, ?, ?, 0)');
                 $insertComment->execute([$post['id'], current_user()['id'], $content]);
+                set_flash('success', 'Comment submitted for review. It will appear once approved by an admin.');
             } catch (Exception $e) {
                 error_log('Failed to add comment: ' . $e->getMessage());
+                set_flash('error', 'Unable to add comment right now.');
             }
         }
+        header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
+        exit;
+    }
+
+    if (isset($_POST['delete_comment_user']) && is_logged_in()) {
+        $commentId = (int)($_POST['comment_id'] ?? 0);
+
+        if ($commentId > 0) {
+            try {
+                $user = current_user();
+                $deleteStmt = $pdo->prepare('UPDATE comments SET is_deleted = 1 WHERE id = ? AND (user_id = ? OR ? = 1)');
+                $deleteStmt->execute([$commentId, $user['id'], (int)!empty($user['is_admin'])]);
+
+                if ($deleteStmt->rowCount() > 0) {
+                    set_flash('success', 'Comment deleted.');
+                } else {
+                    set_flash('error', 'You do not have permission to delete this comment.');
+                }
+            } catch (Exception $e) {
+                error_log('Failed to delete comment: ' . $e->getMessage());
+                set_flash('error', 'Unable to delete comment right now.');
+            }
+        }
+
         header('Location: ' . site_url('post.php?slug=' . urlencode($slug)));
         exit;
     }
@@ -82,8 +118,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Comments
 $comments = [];
 try {
-    $commentStmt = $pdo->prepare('SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? AND c.is_deleted = 0 ORDER BY c.created_at DESC');
-    $commentStmt->execute([$post['id']]);
+    if (is_logged_in()) {
+        $commentStmt = $pdo->prepare('SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? AND c.is_deleted = 0 AND (c.is_approved = 1 OR c.user_id = ?) ORDER BY c.created_at DESC');
+        $commentStmt->execute([$post['id'], current_user()['id']]);
+    } else {
+        $commentStmt = $pdo->prepare('SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.post_id = ? AND c.is_deleted = 0 AND c.is_approved = 1 ORDER BY c.created_at DESC');
+        $commentStmt->execute([$post['id']]);
+    }
     $comments = $commentStmt->fetchAll();
 } catch (Exception $e) {
     error_log('Failed to load comments: ' . $e->getMessage());
@@ -123,6 +164,9 @@ try {
             <h3>Comments</h3>
         </div>
     </div>
+    <?php if ($message): ?>
+        <div class="alert <?php echo htmlspecialchars($message['type']); ?>"><?php echo htmlspecialchars($message['message']); ?></div>
+    <?php endif; ?>
     <div class="comment-box">
         <?php if (is_logged_in()): ?>
             <form method="post" class="stack">
@@ -144,8 +188,18 @@ try {
                 <div class="comment-header">
                     <strong><?php echo htmlspecialchars($comment['username']); ?></strong>
                     <span class="post-meta"><?php echo date('M j, Y g:i A', strtotime($comment['created_at'])); ?></span>
+                    <?php if (!$comment['is_approved']): ?>
+                        <span class="badge secondary">Pending approval</span>
+                    <?php endif; ?>
                 </div>
                 <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
+                <?php if (is_logged_in() && (current_user()['id'] === (int)$comment['user_id'] || !empty(current_user()['is_admin']))): ?>
+                    <form method="post" class="action-row" style="margin-top:8px;">
+                        <input type="hidden" name="delete_comment_user" value="1">
+                        <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
+                        <button class="button secondary" type="submit">Delete</button>
+                    </form>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
         <?php if (empty($comments)): ?>
