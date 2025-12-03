@@ -46,4 +46,14 @@ function find_blocked_words(string $content): array
 
     return array_values(array_unique($matches));
 }
+
+function save_blocked_words(array $words): bool
+{
+    $path = __DIR__ . '/../config/blocked_words.txt';
+    $normalized = array_map(static fn($word) => strtolower(trim($word)), $words);
+    $filtered = array_values(array_filter($normalized, static fn($word) => $word !== ''));
+    sort($filtered);
+
+    return file_put_contents($path, implode(PHP_EOL, $filtered) . PHP_EOL) !== false;
+}
 ?>
