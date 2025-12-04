@@ -6,6 +6,7 @@ $posts = [];
 $totalPosts = 0;
 $highlightUrl = '#latest';
 $hashtagsByPost = [];
+$likesByPost = [];
 $popularHashtags = [];
 $hashtagFilter = trim($_GET['hashtag'] ?? '');
 $hashtagQuery = ltrim($hashtagFilter, '#');
@@ -13,12 +14,13 @@ $hashtagSlug = $hashtagQuery ? slugify($hashtagQuery) : '';
 $activeHashtagName = '';
 
 try {
-    $popularStmt = $pdo->query("SELECT h.name, h.slug, COUNT(ph.post_id) AS uses
-        FROM hashtags h
-        JOIN post_hashtags ph ON ph.hashtag_id = h.id
-        GROUP BY h.id, h.name, h.slug
-        ORDER BY uses DESC, h.name
-        LIMIT 10");
+$popularStmt = $pdo->query("SELECT h.name, h.slug, COUNT(ph.post_id) AS uses
+    FROM hashtags h
+    JOIN post_hashtags ph ON ph.hashtag_id = h.id
+    JOIN posts p ON p.id = ph.post_id AND p.status = 'published'
+    GROUP BY h.id, h.name, h.slug
+    ORDER BY uses DESC, h.name
+    LIMIT 10");
     $popularHashtags = $popularStmt->fetchAll();
 } catch (Exception $e) {
     error_log('Failed to load popular hashtags: ' . $e->getMessage());
@@ -72,6 +74,12 @@ try {
         $tagStmt->execute($postIds);
         foreach ($tagStmt->fetchAll() as $row) {
             $hashtagsByPost[$row['post_id']][] = $row;
+        }
+
+        $likeStmt = $pdo->prepare("SELECT post_id, COUNT(*) AS likes FROM post_likes WHERE post_id IN ($placeholders) GROUP BY post_id");
+        $likeStmt->execute($postIds);
+        foreach ($likeStmt->fetchAll() as $likeRow) {
+            $likesByPost[(int)$likeRow['post_id']] = (int)$likeRow['likes'];
         }
     }
 } catch (Exception $e) {
@@ -161,6 +169,7 @@ try {
             <?php endif; ?>
             <div class="card-footer">
                 <a class="button ghost" href="<?php echo site_url('post.php?slug=' . urlencode($post['slug'])); ?>">Read more</a>
+                <span class="post-meta"><?php echo $likesByPost[$post['id']] ?? 0; ?> likes</span>
                 <span class="read-time">~<?php echo max(2, ceil(str_word_count(strip_tags($post['content'])) / 200)); ?> min read</span>
             </div>
         </article>

@@ -392,6 +392,16 @@ option {
   color: #fff;
   font-size: 1rem;
 }
+
+select,
+option {
+  background: var(--surface);
+}
+
+select option:checked,
+select option:hover {
+  background: var(--surface-alt);
+}
 textarea {
   min-height: 140px;
 }
