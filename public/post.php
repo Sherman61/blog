@@ -24,6 +24,17 @@ try {
     $post = null;
 }
 
+$postHashtags = [];
+try {
+    if ($post) {
+        $tagStmt = $pdo->prepare('SELECT h.name, h.slug FROM post_hashtags ph JOIN hashtags h ON h.id = ph.hashtag_id WHERE ph.post_id = ? ORDER BY h.name');
+        $tagStmt->execute([$post['id']]);
+        $postHashtags = $tagStmt->fetchAll();
+    }
+} catch (Exception $e) {
+    error_log('Failed to load hashtags for post: ' . $e->getMessage());
+}
+
 if (!$post) {
     http_response_code(404);
     echo '<p>Post not found.</p>';
@@ -160,6 +171,13 @@ try {
         </div>
         <h1><?php echo htmlspecialchars($post['title']); ?></h1>
         <p class="muted">Written by <?php echo htmlspecialchars($post['username']); ?></p>
+        <?php if (!empty($postHashtags)): ?>
+            <div class="pill-row" style="margin-top:10px;">
+                <?php foreach ($postHashtags as $tag): ?>
+                    <a class="pill" href="<?php echo site_url('index.php?hashtag=' . urlencode($tag['slug'])); ?>">#<?php echo htmlspecialchars($tag['name']); ?></a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
         <?php if (is_logged_in() && (current_user()['id'] === (int)$post['user_id'] || !empty(current_user()['is_admin']))): ?>
             <div class="action-row" style="margin-top:10px;">
                 <a class="button tertiary" href="<?php echo site_url('admin/posts.php?edit=' . $post['id']); ?>">Edit post</a>
