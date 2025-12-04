@@ -55,6 +55,31 @@ CREATE TABLE posts (
         ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- HASHTAGS
+CREATE TABLE hashtags (
+    id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(100) NOT NULL,
+    slug       VARCHAR(120) NOT NULL UNIQUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_hashtags_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE post_hashtags (
+    post_id    INT UNSIGNED NOT NULL,
+    hashtag_id INT UNSIGNED NOT NULL,
+
+    PRIMARY KEY (post_id, hashtag_id),
+    INDEX idx_post_hashtags_hashtag_id (hashtag_id),
+
+    CONSTRAINT fk_post_hashtags_post
+        FOREIGN KEY (post_id) REFERENCES posts(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_post_hashtags_hashtag
+        FOREIGN KEY (hashtag_id) REFERENCES hashtags(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- COMMENTS
 CREATE TABLE comments (
     id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
