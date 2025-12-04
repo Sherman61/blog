@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/functions.php';
 $slug = $_GET['slug'] ?? '';
 $category = null;
 $posts = [];
+$likesByPost = [];
 
 if ($slug) {
     try {
@@ -19,6 +20,16 @@ if ($slug) {
                 ORDER BY p.published_at DESC");
             $postStmt->execute([$category['id']]);
             $posts = $postStmt->fetchAll();
+
+            if (!empty($posts)) {
+                $postIds = array_column($posts, 'id');
+                $placeholders = implode(',', array_fill(0, count($postIds), '?'));
+                $likeStmt = $pdo->prepare("SELECT post_id, COUNT(*) AS likes FROM post_likes WHERE post_id IN ($placeholders) GROUP BY post_id");
+                $likeStmt->execute($postIds);
+                foreach ($likeStmt->fetchAll() as $likeRow) {
+                    $likesByPost[(int)$likeRow['post_id']] = (int)$likeRow['likes'];
+                }
+            }
         }
     } catch (Exception $e) {
         error_log('Failed to load category: ' . $e->getMessage());
@@ -47,6 +58,7 @@ if ($slug) {
             <p><?php echo htmlspecialchars(substr(strip_tags($post['content']), 0, 150)); ?>...</p>
             <div class="card-footer">
                 <a class="button ghost" href="<?php echo site_url('post.php?slug=' . urlencode($post['slug'])); ?>">Read more</a>
+                <span class="post-meta"><?php echo $likesByPost[$post['id']] ?? 0; ?> likes</span>
             </div>
         </article>
     <?php endforeach; ?>

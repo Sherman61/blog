@@ -6,6 +6,7 @@ function admin_nav(string $active = 'dashboard'): void
     $items = [
         'dashboard' => ['label' => 'Dashboard', 'href' => site_url('admin/index.php')],
         'posts' => ['label' => 'Posts', 'href' => site_url('admin/posts.php')],
+        'drafts' => ['label' => 'Drafts', 'href' => site_url('admin/drafts.php')],
         'categories' => ['label' => 'Categories', 'href' => site_url('admin/categories.php')],
         'comments' => ['label' => 'Comments', 'href' => site_url('admin/comments.php')],
         'blocked_words' => ['label' => 'Blocked words', 'href' => site_url('admin/blocked_words.php')],
