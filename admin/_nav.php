@@ -9,6 +9,7 @@ function admin_nav(string $active = 'dashboard'): void
         'categories' => ['label' => 'Categories', 'href' => site_url('admin/categories.php')],
         'comments' => ['label' => 'Comments', 'href' => site_url('admin/comments.php')],
         'blocked_words' => ['label' => 'Blocked words', 'href' => site_url('admin/blocked_words.php')],
+        'analytics' => ['label' => 'analytics', 'href' => ('https://analytics.google.com/analytics/web/#/a163650523p514755040/reports/reportinghub?params=_u..nav%3Dmaui')],
     ];
     echo '<nav class="admin-nav">';
     foreach ($items as $key => $item) {

@@ -27,7 +27,7 @@ try {
 ?>
 <section class="hero">
     <div class="hero-content">
-        <p class="eyebrow">Curated calm</p>
+        <p class="eyebrow">calm</p>
         <h1>Shiya's Blog</h1>
         <p class="lead">Thoughtful stuff that popped into someones brain</p>
         <div class="hero-actions">

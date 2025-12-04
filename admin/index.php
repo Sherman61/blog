@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_category'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
     $title = trim($_POST['title'] ?? '');
     $content = trim($_POST['content'] ?? '');
-    $categoryId = (int)($_POST['category_id'] ?? 0);
+    $categoryId = (int) ($_POST['category_id'] ?? 0);
     $status = $_POST['status'] ?? 'draft';
 
     if ($title && $content && $categoryId) {
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
 
 // Publish a draft post
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publish_post'])) {
-    $postId = (int)($_POST['post_id'] ?? 0);
+    $postId = (int) ($_POST['post_id'] ?? 0);
     if ($postId > 0) {
         try {
             $stmt = $pdo->prepare('UPDATE posts SET status = \'published\', published_at = IFNULL(published_at, NOW()) WHERE id = ?');
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['publish_post'])) {
 
 // Delete comment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
-    $commentId = (int)($_POST['comment_id'] ?? 0);
+    $commentId = (int) ($_POST['comment_id'] ?? 0);
 
     if ($commentId > 0) {
         try {
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_comment'])) {
 
 // Approve comment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve_comment'])) {
-    $commentId = (int)($_POST['comment_id'] ?? 0);
+    $commentId = (int) ($_POST['comment_id'] ?? 0);
 
     if ($commentId > 0) {
         try {
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve_comment'])) {
 
 // Edit comment
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_comment'])) {
-    $commentId = (int)($_POST['comment_id'] ?? 0);
+    $commentId = (int) ($_POST['comment_id'] ?? 0);
     $content = trim($_POST['content'] ?? '');
 
     if ($commentId > 0 && $content) {
@@ -177,9 +177,9 @@ try {
         LIMIT 15");
     $recentComments = $commentStmt->fetchAll();
 
-    $metrics['posts'] = (int)$pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
-    $metrics['categories'] = (int)$pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn();
-    $metrics['pending_comments'] = (int)$pdo->query('SELECT COUNT(*) FROM comments WHERE is_approved = 0 AND is_deleted = 0')->fetchColumn();
+    $metrics['posts'] = (int) $pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
+    $metrics['categories'] = (int) $pdo->query('SELECT COUNT(*) FROM categories')->fetchColumn();
+    $metrics['pending_comments'] = (int) $pdo->query('SELECT COUNT(*) FROM comments WHERE is_approved = 0 AND is_deleted = 0')->fetchColumn();
 } catch (Exception $e) {
     error_log('Admin dashboard load failed: ' . $e->getMessage());
 }
@@ -191,7 +191,8 @@ try {
 <?php admin_nav('dashboard'); ?>
 <?php $message = $message ?? flash_message(); ?>
 <?php if ($message): ?>
-    <div class="alert <?php echo htmlspecialchars($message['type']); ?>"><?php echo htmlspecialchars($message['message']); ?></div>
+    <div class="alert <?php echo htmlspecialchars($message['type']); ?>">
+        <?php echo htmlspecialchars($message['message']); ?></div>
 <?php endif; ?>
 
 <section class="card analytics-card">
@@ -204,15 +205,15 @@ try {
     <div class="metrics-grid">
         <div class="metric">
             <div class="metric__label">Posts</div>
-            <div class="metric__value"><?php echo (int)$metrics['posts']; ?></div>
+            <div class="metric__value"><?php echo (int) $metrics['posts']; ?></div>
         </div>
         <div class="metric">
             <div class="metric__label">Categories</div>
-            <div class="metric__value"><?php echo (int)$metrics['categories']; ?></div>
+            <div class="metric__value"><?php echo (int) $metrics['categories']; ?></div>
         </div>
         <div class="metric">
             <div class="metric__label">Pending comments</div>
-            <div class="metric__value"><?php echo (int)$metrics['pending_comments']; ?></div>
+            <div class="metric__value"><?php echo (int) $metrics['pending_comments']; ?></div>
         </div>
     </div>
 </section>
@@ -249,20 +250,8 @@ try {
             <button class="button" type="submit">Publish</button>
         </form>
     </section>
-    <section class="card">
-        <h2>Add category</h2>
-        <form method="post">
-            <input type="hidden" name="create_category" value="1">
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description"></textarea>
-            </div>
-            <button class="button" type="submit">Create category</button>
-        </form>
+
+    </form>
     </section>
 </div>
 
@@ -271,7 +260,10 @@ try {
     <?php foreach ($userPosts as $userPost): ?>
         <div class="comment">
             <strong><?php echo htmlspecialchars($userPost['title']); ?></strong>
-            <div class="post-meta"><?php echo htmlspecialchars($userPost['category_name']); ?> · by <?php echo htmlspecialchars($userPost['username']); ?> · <?php echo htmlspecialchars($userPost['status']); ?><?php if ($userPost['published_at']): ?> · <?php echo date('M j, Y', strtotime($userPost['published_at'])); ?><?php endif; ?></div>
+            <div class="post-meta"><?php echo htmlspecialchars($userPost['category_name']); ?> · by
+                <?php echo htmlspecialchars($userPost['username']); ?> ·
+                <?php echo htmlspecialchars($userPost['status']); ?>    <?php if ($userPost['published_at']): ?> ·
+                    <?php echo date('M j, Y', strtotime($userPost['published_at'])); ?>    <?php endif; ?></div>
             <?php if ($userPost['status'] === 'draft'): ?>
                 <form method="post" class="action-row" style="margin-top:8px;">
                     <input type="hidden" name="publish_post" value="1">
@@ -299,31 +291,34 @@ try {
                     <span class="badge">Approved</span>
                 <?php endif; ?>
             </div>
-            <p class="muted">On <a href="<?php echo site_url('post.php?slug=' . urlencode($comment['slug'])); ?>"><?php echo htmlspecialchars($comment['post_title']); ?></a></p>
+            <p class="muted">On <a
+                    href="<?php echo site_url('post.php?slug=' . urlencode($comment['slug'])); ?>"><?php echo htmlspecialchars($comment['post_title']); ?></a>
+            </p>
             <p><?php echo nl2br(htmlspecialchars($comment['content'])); ?></p>
-        <?php if (!$comment['is_deleted']): ?>
-            <form method="post" class="action-row" style="margin-top:8px;">
-                <input type="hidden" name="delete_comment" value="1">
-                <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
-                <button class="button secondary" type="submit">Delete comment</button>
-            </form>
-            <?php if (!$comment['is_approved']): ?>
+            <?php if (!$comment['is_deleted']): ?>
                 <form method="post" class="action-row" style="margin-top:8px;">
-                    <input type="hidden" name="approve_comment" value="1">
+                    <input type="hidden" name="delete_comment" value="1">
                     <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
-                    <button class="button" type="submit">Approve comment</button>
+                    <button class="button secondary" type="submit">Delete comment</button>
                 </form>
+                <?php if (!$comment['is_approved']): ?>
+                    <form method="post" class="action-row" style="margin-top:8px;">
+                        <input type="hidden" name="approve_comment" value="1">
+                        <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
+                        <button class="button" type="submit">Approve comment</button>
+                    </form>
+                <?php endif; ?>
+                <form method="post" class="stack" style="margin-top:12px;">
+                    <input type="hidden" name="edit_comment" value="1">
+                    <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
+                    <label for="comment-<?php echo $comment['id']; ?>">Edit content</label>
+                    <textarea id="comment-<?php echo $comment['id']; ?>" name="content"
+                        required><?php echo htmlspecialchars($comment['content']); ?></textarea>
+                    <button class="button tertiary" type="submit">Save edit</button>
+                </form>
+            <?php else: ?>
+                <p class="muted">Comment deleted.</p>
             <?php endif; ?>
-            <form method="post" class="stack" style="margin-top:12px;">
-                <input type="hidden" name="edit_comment" value="1">
-                <input type="hidden" name="comment_id" value="<?php echo $comment['id']; ?>">
-                <label for="comment-<?php echo $comment['id']; ?>">Edit content</label>
-                <textarea id="comment-<?php echo $comment['id']; ?>" name="content" required><?php echo htmlspecialchars($comment['content']); ?></textarea>
-                <button class="button tertiary" type="submit">Save edit</button>
-            </form>
-        <?php else: ?>
-            <p class="muted">Comment deleted.</p>
-        <?php endif; ?>
         </div>
     <?php endforeach; ?>
     <?php if (empty($recentComments)): ?>
